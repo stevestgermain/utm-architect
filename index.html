@@ -1,32 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UTM Architect</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        background-color: #ffffff;
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
-  }
-}
-</script>
-</head>
+
+    <!-- Inter font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Instant dark-mode sync with parent + prefers-color-scheme fallback -->
+    <script>
+      (function () {
+        function applyTheme(theme) {
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        }
+
+        function detectInitialTheme() {
+          try {
+            if (
+              window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+            ) {
+              applyTheme("dark");
+            } else {
+              applyTheme("light");
+            }
+          } catch (e) {
+            applyTheme("light");
+          }
+        }
+
+        function handleMessage(event) {
+          const data = event.data || {};
+          if (
+            (data.type === "THEME_CHANGE" || data.type === "THEME_RESPONSE") &&
+            (data.theme === "dark" || data.theme === "light")
+          ) {
+            applyTheme(data.theme);
+          }
+        }
+
+        // 1) Respect system preference on first paint
+        detectInitialTheme();
+
+        // 2) Stay in sync with parent messages
+        window.addEventListener("message", handleMessage, false);
+
+        // 3) Ask parent (Ghost) what theme it's using
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: "REQUEST_THEME" }, "*");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
   <body>
     <div id="root"></div>
+
+    <!-- Vite React entry -->
     <script type="module" src="./index.tsx"></script>
+
+    <!-- Iframe Resizer -->
     <script src="https://cdn.jsdelivr.net/npm/iframe-resizer/js/iframeResizer.contentWindow.min.js"></script>
   </body>
 </html>
